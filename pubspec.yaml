@@ -1,0 +1,48 @@
+name: paketvault
+description: "Aplikasi pribadi kurir untuk dokumentasi bukti pengiriman paket."
+publish_to: 'none'
+version: 0.3.0+3
+
+environment:
+  sdk: '>=3.12.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: 3.3.1
+  go_router: 17.3.0
+  flutter_dotenv: 6.0.1
+  isar_community: 3.3.2
+  isar_community_flutter_libs: 3.3.2
+  mobile_scanner: 7.2.0
+  camera: 0.12.0+1
+  geolocator: 14.0.3
+  permission_handler: 12.0.3
+  flutter_image_compress: 2.4.0
+  path_provider: 2.1.5
+  path: 1.9.1
+
+  # ── Milestone 3: Cloud Sync ─────────────────────────────────────
+  # Supabase Flutter SDK — storage + database
+  supabase_flutter: 2.8.4
+
+  # Cek koneksi internet untuk auto-sync
+  # minSdk 21 — kita 23 ✅, Flutter 3.44 ✅
+  connectivity_plus: 6.1.4
+  # ────────────────────────────────────────────────────────────────
+
+  cupertino_icons: 1.0.8
+  # ── Milestone 4: Pengaturan ────────────────────────────────────
+  shared_preferences: 2.5.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: 6.0.0
+  isar_community_generator: 3.3.2
+  build_runner: ^2.15.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - .env

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:paketvault/core/routing/app_routes.dart';
 import 'package:paketvault/features/form_bukti/presentation/pages/form_bukti_page.dart';
+import 'package:paketvault/features/home/presentation/pages/home_page.dart';
 import 'package:paketvault/features/pengaturan/presentation/pages/pengaturan_page.dart';
 import 'package:paketvault/features/riwayat/presentation/pages/riwayat_detail_page.dart';
 import 'package:paketvault/features/riwayat/presentation/pages/riwayat_page.dart';
@@ -11,13 +12,18 @@ import 'package:paketvault/features/scanner/presentation/pages/scanner_page.dart
 
 final routerProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
-    initialLocation: AppRoutes.scanner,
+    initialLocation: AppRoutes.home,
     debugLogDiagnostics: kDebugMode,
     routes: [
       GoRoute(
+        path: AppRoutes.home,
+        name: AppRoutes.homeName,
+        builder: (_, _) => const HomePage(),
+      ),
+      GoRoute(
         path: AppRoutes.scanner,
         name: AppRoutes.scannerName,
-        builder: (_, __) => const ScannerPage(),
+        builder: (_, _) => const ScannerPage(),
       ),
       GoRoute(
         path: AppRoutes.formBukti,
@@ -30,7 +36,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.riwayat,
         name: AppRoutes.riwayatName,
-        builder: (_, __) => const RiwayatPage(),
+        builder: (_, _) => const RiwayatPage(),
         routes: [
           GoRoute(
             path: AppRoutes.riwayatDetailSegment,
@@ -43,12 +49,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.riwayatGambar,
         name: AppRoutes.riwayatGambarName,
-        builder: (_, __) => const RiwayatGambarPage(),
+        builder: (_, _) => const RiwayatGambarPage(),
       ),
       GoRoute(
         path: AppRoutes.pengaturan,
         name: AppRoutes.pengaturanName,
-        builder: (_, __) => const PengaturanPage(),
+        builder: (_, _) => const PengaturanPage(),
       ),
     ],
   );

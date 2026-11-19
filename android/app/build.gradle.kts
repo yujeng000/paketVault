@@ -7,8 +7,8 @@ android {
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     defaultConfig {
         applicationId = "id.akbar.paketvault"
@@ -18,7 +18,7 @@ android {
         versionName = flutter.versionName
     }
     buildTypes {
-        release { signingConfig = signingConfigs.getByName("debug") }
+        release { signingConfig = signingConfigs.getByName("debug"); isCrunchPngs = false; proguardFiles("proguard-rules.pro") }
     }
 }
 flutter { source = "../.." }

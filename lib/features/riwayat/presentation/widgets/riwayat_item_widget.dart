@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:paketvault/core/utils/date_formatter.dart';
+import 'package:paketvault/core/utils/map_launcher.dart';
 import 'package:paketvault/features/delivery/data/models/delivery_evidence.dart';
 import 'package:paketvault/features/riwayat/presentation/widgets/sync_status_badge.dart';
 
@@ -20,6 +21,8 @@ class RiwayatItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final lat = evidence.latitude;
+    final lng = evidence.longitude;
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: InkWell(
@@ -37,6 +40,17 @@ class RiwayatItemWidget extends StatelessWidget {
                     child: Text(evidence.resi,
                         style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                   ),
+                  if (lat != null && lng != null) ...[
+                    IconButton(
+                      icon: const Icon(Icons.navigation, size: 22),
+                      color: theme.colorScheme.primary,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: () => MapLauncher.navigateTo(context, lat, lng),
+                      tooltip: 'Navigasi ke lokasi',
+                    ),
+                    const SizedBox(width: 16),
+                  ],
                   IconButton(
                     icon: const Icon(Icons.delete_outline, size: 20),
                     color: theme.colorScheme.error,

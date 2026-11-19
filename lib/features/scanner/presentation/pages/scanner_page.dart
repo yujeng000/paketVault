@@ -6,8 +6,6 @@ import 'package:paketvault/core/routing/app_routes.dart';
 import 'package:paketvault/core/theme/app_colors.dart';
 import 'package:paketvault/features/scanner/presentation/widgets/scanner_overlay_widget.dart';
 import 'package:paketvault/features/scanner/services/mobile_scanner_service.dart';
-import 'package:paketvault/features/sync/providers/sync_providers.dart';
-import 'package:paketvault/features/delivery/providers/delivery_providers.dart';
 
 class ScannerPage extends ConsumerStatefulWidget {
   const ScannerPage({super.key});
@@ -21,7 +19,6 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   late final MobileScannerServiceImpl _scannerService;
   bool _isFlashOn = false;
   bool _isProcessing = false;
-  bool _isSyncing = false;
 
   @override
   void initState() {
@@ -29,37 +26,12 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     WidgetsBinding.instance.addObserver(this);
     _scannerService = MobileScannerServiceImpl();
     _listenToScan();
-    _tryAutoSync();
   }
 
   void _listenToScan() {
     _scannerService.barcodeStream.listen((rawValue) {
       if (rawValue != null && !_isProcessing) _onBarcodeDetected(rawValue);
     });
-  }
-
-  /// Auto-sync saat pertama kali buka scanner, jika ada internet
-  Future<void> _tryAutoSync() async {
-    final isConfigured = ref.read(isSupabaseConfiguredProvider);
-    if (!isConfigured) return;
-    try {
-      final connected = await ref.read(connectivityServiceProvider).isConnected();
-      if (connected) _triggerSync();
-    } catch (_) {}
-  }
-
-  Future<void> _triggerSync() async {
-    if (_isSyncing) return;
-    final isConfigured = ref.read(isSupabaseConfiguredProvider);
-    if (!isConfigured) return;
-
-    setState(() => _isSyncing = true);
-    try {
-      await ref.read(syncServiceProvider).syncAll();
-      ref.invalidate(allEvidencesProvider);
-      ref.invalidate(pendingSyncCountProvider);
-    } catch (_) {}
-    if (mounted) setState(() => _isSyncing = false);
   }
 
   void _onBarcodeDetected(String rawValue) {
@@ -138,12 +110,12 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                         queryParameters: {AppRoutes.paramResi: resi});
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   child: const Text('Lanjutkan',
-                      style: TextStyle(color: Colors.white, fontSize: 15)),
+                      style: TextStyle(color: Colors.black, fontSize: 15)),
                 ),
               ),
             ],
@@ -171,13 +143,6 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
 
   @override
   Widget build(BuildContext context) {
-    final isConnectedAsync = ref.watch(isConnectedProvider);
-    final pendingCountAsync = ref.watch(pendingSyncCountProvider);
-    final isConfigured = ref.watch(isSupabaseConfiguredProvider);
-
-    final isConnected = isConnectedAsync.whenOrNull(data: (v) => v) ?? false;
-    final pendingCount = pendingCountAsync.whenOrNull(data: (v) => v) ?? 0;
-
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -199,48 +164,13 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   children: [
-                    const Text('PaketVault',
+                    GestureDetector(
+                      onTap: () => context.pop(),
+                      child: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text('Scan Resi',
                         style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                    const Spacer(),
-                    // Indikator internet
-                    if (isConfigured) ...[
-                      Icon(
-                        isConnected ? Icons.wifi : Icons.wifi_off,
-                        color: isConnected ? AppColors.statusSynced : Colors.white38,
-                        size: 18,
-                      ),
-                      const SizedBox(width: 8),
-                      // Badge pending sync
-                      if (pendingCount > 0)
-                        GestureDetector(
-                          onTap: _isSyncing ? null : _triggerSync,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: AppColors.statusPending.withValues(alpha: 0.85),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: _isSyncing
-                                ? const SizedBox(width: 14, height: 14,
-                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                                : Text('$pendingCount belum sync',
-                                    style: const TextStyle(color: Colors.white, fontSize: 11)),
-                          ),
-                        )
-                      else if (isConnected)
-                        const Icon(Icons.cloud_done_outlined,
-                            color: AppColors.statusSynced, size: 18),
-                      const SizedBox(width: 8),
-                    ],
-                    GestureDetector(
-                      onTap: () => context.pushNamed(AppRoutes.riwayatName),
-                      child: const Icon(Icons.history, color: Colors.white, size: 24),
-                    ),
-                    const SizedBox(width: 16),
-                    GestureDetector(
-                      onTap: () => context.pushNamed(AppRoutes.pengaturanName),
-                      child: const Icon(Icons.settings_outlined, color: Colors.white, size: 24),
-                    ),
                   ],
                 ),
               ),
@@ -313,9 +243,9 @@ class _ControlButton extends StatelessWidget {
         width: 80,
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.primary.withValues(alpha: 0.3) : Colors.white10,
+          color: isActive ? Colors.white.withValues(alpha: 0.25) : Colors.white10,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: isActive ? AppColors.primary : Colors.transparent),
+          border: Border.all(color: isActive ? Colors.white : Colors.transparent),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,

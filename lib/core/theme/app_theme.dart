@@ -4,7 +4,13 @@ import 'package:paketvault/core/theme/app_colors.dart';
 abstract final class AppTheme {
   static ThemeData get light {
     final cs = ColorScheme.fromSeed(
-        seedColor: AppColors.primary, brightness: Brightness.light);
+            seedColor: AppColors.primary, brightness: Brightness.light)
+        .copyWith(
+      primary: AppColors.primary,
+      onPrimary: Colors.white,
+      primaryContainer: const Color(0xFFE0E0E0),
+      onPrimaryContainer: Colors.black,
+    );
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
@@ -45,7 +51,13 @@ abstract final class AppTheme {
 
   static ThemeData get dark {
     final cs = ColorScheme.fromSeed(
-        seedColor: AppColors.primary, brightness: Brightness.dark);
+            seedColor: AppColors.primary, brightness: Brightness.dark)
+        .copyWith(
+      primary: Colors.white,
+      onPrimary: Colors.black,
+      primaryContainer: const Color(0xFF2A2A2A),
+      onPrimaryContainer: Colors.white,
+    );
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
@@ -63,8 +75,8 @@ abstract final class AppTheme {
               borderRadius: BorderRadius.circular(12))),
       elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)))),

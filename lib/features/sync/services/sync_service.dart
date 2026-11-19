@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:paketvault/core/constants/sync_status.dart';
 import 'package:paketvault/core/errors/app_exception.dart';
+import 'package:paketvault/core/utils/uuid_util.dart';
 import 'package:paketvault/features/delivery/data/models/delivery_evidence.dart';
 import 'package:paketvault/features/delivery/domain/repositories/i_delivery_repository.dart';
 import 'package:paketvault/features/sync/services/supabase_delivery_service.dart';
@@ -49,7 +51,23 @@ class SyncService {
   /// Sync satu evidence. Mengembalikan true jika berhasil.
   Future<bool> _syncEvidence(DeliveryEvidence evidence) async {
     try {
+      // 0. Pastikan bukti dan fotonya punya UUID. Data lama (dibuat sebelum ada UUID)
+      //    memakai ID baris lama di cloud bila ada, jika tidak dibuatkan UUID baru.
+      if (evidence.uuid.isEmpty) {
+        evidence.uuid =
+            await _supabase.findLegacyEvidenceId(evidence) ?? generateUuid();
+        await _repo.saveEvidence(evidence);
+      }
       final photos = await _repo.getPhotosByEvidenceId(evidence.id);
+      for (final photo in photos) {
+        if (photo.uuid.isNotEmpty && photo.evidenceUuid == evidence.uuid) continue;
+        if (photo.uuid.isEmpty) {
+          photo.uuid =
+              await _supabase.findLegacyPhotoId(photo) ?? generateUuid();
+        }
+        photo.evidenceUuid = evidence.uuid;
+        await _repo.savePhoto(photo);
+      }
 
       // 1. Upload setiap foto ke Storage
       for (final photo in photos) {
@@ -59,7 +77,7 @@ class SyncService {
           localPath: photo.localPath,
           resi: evidence.resi,
           photoType: photo.photoTypeValue,
-          photoId: photo.id,
+          photoUuid: photo.uuid,
         );
 
         // Simpan storage path di Isar
@@ -82,10 +100,12 @@ class SyncService {
       // 4. Update status → synced
       await _repo.updateSyncStatus(evidence.id, SyncStatus.synced);
       return true;
-    } on SyncException {
+    } on SyncException catch (e) {
+      debugPrint('[SYNC] gagal (${evidence.resi}): $e');
       await _repo.updateSyncStatus(evidence.id, SyncStatus.failed);
       return false;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[SYNC] error (${evidence.resi}): $e');
       await _repo.updateSyncStatus(evidence.id, SyncStatus.failed);
       return false;
     }

@@ -32,21 +32,27 @@ const DeliveryPhotoSchema = CollectionSchema(
       name: r'evidenceResi',
       type: IsarType.string,
     ),
-    r'localPath': PropertySchema(
+    r'evidenceUuid': PropertySchema(
       id: 3,
+      name: r'evidenceUuid',
+      type: IsarType.string,
+    ),
+    r'localPath': PropertySchema(
+      id: 4,
       name: r'localPath',
       type: IsarType.string,
     ),
     r'photoTypeValue': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'photoTypeValue',
       type: IsarType.long,
     ),
     r'supabaseStoragePath': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'supabaseStoragePath',
       type: IsarType.string,
     ),
+    r'uuid': PropertySchema(id: 7, name: r'uuid', type: IsarType.string),
   },
 
   estimateSize: _deliveryPhotoEstimateSize,
@@ -98,6 +104,7 @@ int _deliveryPhotoEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.evidenceResi.length * 3;
+  bytesCount += 3 + object.evidenceUuid.length * 3;
   bytesCount += 3 + object.localPath.length * 3;
   {
     final value = object.supabaseStoragePath;
@@ -105,6 +112,7 @@ int _deliveryPhotoEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  bytesCount += 3 + object.uuid.length * 3;
   return bytesCount;
 }
 
@@ -117,9 +125,11 @@ void _deliveryPhotoSerialize(
   writer.writeDateTime(offsets[0], object.createdAt);
   writer.writeLong(offsets[1], object.evidenceId);
   writer.writeString(offsets[2], object.evidenceResi);
-  writer.writeString(offsets[3], object.localPath);
-  writer.writeLong(offsets[4], object.photoTypeValue);
-  writer.writeString(offsets[5], object.supabaseStoragePath);
+  writer.writeString(offsets[3], object.evidenceUuid);
+  writer.writeString(offsets[4], object.localPath);
+  writer.writeLong(offsets[5], object.photoTypeValue);
+  writer.writeString(offsets[6], object.supabaseStoragePath);
+  writer.writeString(offsets[7], object.uuid);
 }
 
 DeliveryPhoto _deliveryPhotoDeserialize(
@@ -132,10 +142,12 @@ DeliveryPhoto _deliveryPhotoDeserialize(
   object.createdAt = reader.readDateTime(offsets[0]);
   object.evidenceId = reader.readLong(offsets[1]);
   object.evidenceResi = reader.readString(offsets[2]);
+  object.evidenceUuid = reader.readString(offsets[3]);
   object.id = id;
-  object.localPath = reader.readString(offsets[3]);
-  object.photoTypeValue = reader.readLong(offsets[4]);
-  object.supabaseStoragePath = reader.readStringOrNull(offsets[5]);
+  object.localPath = reader.readString(offsets[4]);
+  object.photoTypeValue = reader.readLong(offsets[5]);
+  object.supabaseStoragePath = reader.readStringOrNull(offsets[6]);
+  object.uuid = reader.readString(offsets[7]);
   return object;
 }
 
@@ -155,9 +167,13 @@ P _deliveryPhotoDeserializeProp<P>(
     case 3:
       return (reader.readString(offset)) as P;
     case 4:
-      return (reader.readLong(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 5:
+      return (reader.readLong(offset)) as P;
+    case 6:
       return (reader.readStringOrNull(offset)) as P;
+    case 7:
+      return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -679,6 +695,147 @@ extension DeliveryPhotoQueryFilter
     });
   }
 
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterFilterCondition>
+  evidenceUuidEqualTo(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'evidenceUuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterFilterCondition>
+  evidenceUuidGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'evidenceUuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterFilterCondition>
+  evidenceUuidLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'evidenceUuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterFilterCondition>
+  evidenceUuidBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'evidenceUuid',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterFilterCondition>
+  evidenceUuidStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'evidenceUuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterFilterCondition>
+  evidenceUuidEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'evidenceUuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterFilterCondition>
+  evidenceUuidContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'evidenceUuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterFilterCondition>
+  evidenceUuidMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'evidenceUuid',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterFilterCondition>
+  evidenceUuidIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'evidenceUuid', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterFilterCondition>
+  evidenceUuidIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'evidenceUuid', value: ''),
+      );
+    });
+  }
+
   QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterFilterCondition> idEqualTo(
     Id value,
   ) {
@@ -1093,6 +1250,150 @@ extension DeliveryPhotoQueryFilter
       );
     });
   }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterFilterCondition> uuidEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'uuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterFilterCondition>
+  uuidGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'uuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterFilterCondition>
+  uuidLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'uuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterFilterCondition> uuidBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'uuid',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterFilterCondition>
+  uuidStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'uuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterFilterCondition>
+  uuidEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'uuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterFilterCondition>
+  uuidContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'uuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterFilterCondition> uuidMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'uuid',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterFilterCondition>
+  uuidIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'uuid', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterFilterCondition>
+  uuidIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'uuid', value: ''),
+      );
+    });
+  }
 }
 
 extension DeliveryPhotoQueryObject
@@ -1143,6 +1444,20 @@ extension DeliveryPhotoQuerySortBy
     });
   }
 
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterSortBy>
+  sortByEvidenceUuid() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'evidenceUuid', Sort.asc);
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterSortBy>
+  sortByEvidenceUuidDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'evidenceUuid', Sort.desc);
+    });
+  }
+
   QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterSortBy> sortByLocalPath() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'localPath', Sort.asc);
@@ -1181,6 +1496,18 @@ extension DeliveryPhotoQuerySortBy
   sortBySupabaseStoragePathDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'supabaseStoragePath', Sort.desc);
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterSortBy> sortByUuid() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'uuid', Sort.asc);
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterSortBy> sortByUuidDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'uuid', Sort.desc);
     });
   }
 }
@@ -1224,6 +1551,20 @@ extension DeliveryPhotoQuerySortThenBy
   thenByEvidenceResiDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'evidenceResi', Sort.desc);
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterSortBy>
+  thenByEvidenceUuid() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'evidenceUuid', Sort.asc);
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterSortBy>
+  thenByEvidenceUuidDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'evidenceUuid', Sort.desc);
     });
   }
 
@@ -1279,6 +1620,18 @@ extension DeliveryPhotoQuerySortThenBy
       return query.addSortBy(r'supabaseStoragePath', Sort.desc);
     });
   }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterSortBy> thenByUuid() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'uuid', Sort.asc);
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QAfterSortBy> thenByUuidDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'uuid', Sort.desc);
+    });
+  }
 }
 
 extension DeliveryPhotoQueryWhereDistinct
@@ -1300,6 +1653,14 @@ extension DeliveryPhotoQueryWhereDistinct
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'evidenceResi', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QDistinct> distinctByEvidenceUuid({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'evidenceUuid', caseSensitive: caseSensitive);
     });
   }
 
@@ -1325,6 +1686,14 @@ extension DeliveryPhotoQueryWhereDistinct
         r'supabaseStoragePath',
         caseSensitive: caseSensitive,
       );
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, DeliveryPhoto, QDistinct> distinctByUuid({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'uuid', caseSensitive: caseSensitive);
     });
   }
 }
@@ -1355,6 +1724,12 @@ extension DeliveryPhotoQueryProperty
     });
   }
 
+  QueryBuilder<DeliveryPhoto, String, QQueryOperations> evidenceUuidProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'evidenceUuid');
+    });
+  }
+
   QueryBuilder<DeliveryPhoto, String, QQueryOperations> localPathProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'localPath');
@@ -1371,6 +1746,12 @@ extension DeliveryPhotoQueryProperty
   supabaseStoragePathProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'supabaseStoragePath');
+    });
+  }
+
+  QueryBuilder<DeliveryPhoto, String, QQueryOperations> uuidProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'uuid');
     });
   }
 }

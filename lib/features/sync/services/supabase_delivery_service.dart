@@ -25,13 +25,13 @@ class SupabaseDeliveryService {
   // ── Storage ──────────────────────────────────────────────────────
 
   /// Upload foto ke Supabase Storage.
-  /// Path: {resi}/{photoType}_{photoId}.jpg
+  /// Path: {resi}/{photoType}_{photoUuid}.jpg
   /// Mengembalikan storage path (bukan URL publik — bucket bersifat private).
   Future<String> uploadPhoto({
     required String localPath,
     required String resi,
     required int photoType,
-    required int photoId,
+    required String photoUuid,
   }) async {
     try {
       final file = File(localPath);
@@ -41,7 +41,7 @@ class SupabaseDeliveryService {
 
       final bytes = await file.readAsBytes();
       final typeName = _photoTypeName(photoType);
-      final storagePath = '$resi/${typeName}_$photoId.jpg';
+      final storagePath = '$resi/${typeName}_$photoUuid.jpg';
 
       await client.storage.from(bucket).uploadBinary(
         storagePath,
@@ -77,6 +77,7 @@ class SupabaseDeliveryService {
     try {
       await client.from('delivery_evidences').upsert(
         {
+          'id': evidence.uuid,
           'local_id': evidence.id,
           'resi': evidence.resi,
           'nama_pemilik': evidence.namaPemilik,
@@ -88,7 +89,7 @@ class SupabaseDeliveryService {
           'gps_akurasi': evidence.gpsAkurasi,
           'waktu': evidence.waktu.toIso8601String(),
         },
-        onConflict: 'local_id',
+        onConflict: 'id',
       );
     } on PostgrestException catch (e) {
       throw SyncException('Gagal sync evidence: ${e.message}');
@@ -105,6 +106,8 @@ class SupabaseDeliveryService {
     try {
       await client.from('delivery_photos').upsert(
         {
+          'id': photo.uuid,
+          'evidence_id': photo.evidenceUuid,
           'local_id': photo.id,
           'evidence_local_id': photo.evidenceId,
           'evidence_resi': photo.evidenceResi,
@@ -112,12 +115,47 @@ class SupabaseDeliveryService {
           'photo_type': photo.photoTypeValue,
           'created_at': photo.createdAt.toIso8601String(),
         },
-        onConflict: 'local_id',
+        onConflict: 'id',
       );
     } on PostgrestException catch (e) {
       throw SyncException('Gagal sync foto: ${e.message}');
     } catch (e) {
       throw SyncException('Error sync foto: $e');
+    }
+  }
+
+  /// Cari ID (UUID) baris lama di cloud untuk bukti yang dibuat sebelum ada UUID lokal,
+  /// supaya tidak terbentuk baris ganda. Mengembalikan null jika memang belum ada.
+  Future<String?> findLegacyEvidenceId(DeliveryEvidence evidence) async {
+    try {
+      final row = await client
+          .from('delivery_evidences')
+          .select('id')
+          .eq('resi', evidence.resi)
+          .eq('local_id', evidence.id)
+          .maybeSingle();
+      return row?['id'] as String?;
+    } on PostgrestException catch (e) {
+      throw SyncException('Gagal cek data lama: ${e.message}');
+    } catch (e) {
+      throw SyncException('Error cek data lama: $e');
+    }
+  }
+
+  /// Sama seperti di atas, untuk foto.
+  Future<String?> findLegacyPhotoId(DeliveryPhoto photo) async {
+    try {
+      final row = await client
+          .from('delivery_photos')
+          .select('id')
+          .eq('evidence_resi', photo.evidenceResi)
+          .eq('local_id', photo.id)
+          .maybeSingle();
+      return row?['id'] as String?;
+    } on PostgrestException catch (e) {
+      throw SyncException('Gagal cek foto lama: ${e.message}');
+    } catch (e) {
+      throw SyncException('Error cek foto lama: $e');
     }
   }
 

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:paketvault/core/constants/photo_type.dart';
 import 'package:paketvault/core/routing/app_routes.dart';
 import 'package:paketvault/core/utils/date_formatter.dart';
+import 'package:paketvault/core/utils/map_launcher.dart';
 import 'package:paketvault/features/delivery/providers/delivery_providers.dart';
 import 'package:paketvault/features/riwayat/presentation/widgets/sync_status_badge.dart';
 import 'package:paketvault/features/sync/providers/sync_providers.dart';
@@ -36,6 +37,19 @@ class RiwayatDetailPage extends ConsumerWidget {
           error: (_, __) => const Text('Error'),
         ),
         actions: [
+          // Navigasi ke lokasi penerima (butuh GPS tersimpan)
+          evidenceAsync.maybeWhen(
+            data: (e) {
+              final lat = e?.latitude, lng = e?.longitude;
+              if (lat == null || lng == null) return const SizedBox.shrink();
+              return IconButton(
+                icon: const Icon(Icons.navigation),
+                tooltip: 'Navigasi ke lokasi',
+                onPressed: () => MapLauncher.navigateTo(context, lat, lng),
+              );
+            },
+            orElse: () => const SizedBox.shrink(),
+          ),
           // Sync satu item
           if (isConfigured && isConnected)
             IconButton(

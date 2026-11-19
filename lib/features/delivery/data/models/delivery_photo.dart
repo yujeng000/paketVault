@@ -23,4 +23,9 @@ class DeliveryPhoto {
 
   /// Path di Supabase Storage — diisi setelah upload
   String? supabaseStoragePath;
+
+  /// ID unik foto (UUID v4) dan ID bukti induknya — kunci sinkronisasi.
+  /// Kosong pada data lama; diisi otomatis saat sinkronisasi berikutnya.
+  String uuid = '';
+  String evidenceUuid = '';
 }

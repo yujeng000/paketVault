@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 abstract final class AppColors {
-  static const Color primary = Color(0xFF1976D2);
-  static const Color primaryDark = Color(0xFF115293);
-  static const Color primaryLight = Color(0xFF63A4FF);
+  static const Color primary = Color(0xFF000000);
+  static const Color primaryDark = Color(0xFF000000);
+  static const Color primaryLight = Color(0xFFE0E0E0);
   static const Color statusSynced = Color(0xFF2E7D32);
   static const Color statusPending = Color(0xFFF57C00);
   static const Color statusFailed = Color(0xFFD32F2F);

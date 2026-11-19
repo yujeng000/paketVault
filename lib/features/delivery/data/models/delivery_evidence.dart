@@ -28,4 +28,8 @@ class DeliveryEvidence {
 
   /// Diisi setelah sync ke Supabase
   String? supabaseId;
+
+  /// ID unik (UUID v4) — kunci sinkronisasi ke Supabase.
+  /// Kosong pada data lama; diisi otomatis saat sinkronisasi berikutnya.
+  String uuid = '';
 }

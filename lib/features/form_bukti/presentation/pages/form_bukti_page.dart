@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:paketvault/core/utils/uuid_util.dart';
 import 'package:paketvault/core/constants/photo_type.dart';
 import 'package:paketvault/core/constants/sync_status.dart';
 import 'package:paketvault/core/errors/app_exception.dart';
@@ -15,28 +16,33 @@ import 'package:paketvault/features/form_bukti/presentation/widgets/success_popu
 import 'package:paketvault/features/pengaturan/providers/pengaturan_providers.dart';
 import 'package:paketvault/features/sync/providers/sync_providers.dart';
 
+/// Penanda otomatis untuk bukti tanpa nomor resi, mis. TANPA-RESI-20261117-141530.
+String _resiOtomatis(DateTime t) {
+  String d(int v, [int n = 2]) => v.toString().padLeft(n, '0');
+  return 'TANPA-RESI-${d(t.year, 4)}${d(t.month)}${d(t.day)}-${d(t.hour)}${d(t.minute)}${d(t.second)}';
+}
+
 // ── State ─────────────────────────────────────────────────────────────────────
 
 class _FormState {
   const _FormState({
-    this.resi = '', this.namaPemilik = '', this.namaPenerima = '',
-    this.nomorHp = '', this.catatan = '',
+    this.resi = '', this.namaPemilik = '', this.nomorHp = '',
     this.fotoPaketPath, this.fotoRumahPath, this.fotoPenerimaPath,
     this.latitude, this.longitude, this.gpsAkurasi,
     this.isSaving = false, this.isLoadingGps = false, this.errorMessage,
   });
 
-  final String resi, namaPemilik, namaPenerima, nomorHp, catatan;
+  final String resi, namaPemilik, nomorHp;
   final String? fotoPaketPath, fotoRumahPath, fotoPenerimaPath;
   final double? latitude, longitude, gpsAkurasi;
   final bool isSaving, isLoadingGps;
   final String? errorMessage;
 
   bool get hasGps => latitude != null && longitude != null;
-  bool get canSave => resi.trim().isNotEmpty && fotoPaketPath != null;
+  bool get canSave => fotoPaketPath != null; // resi opsional
 
   _FormState copyWith({
-    String? resi, String? namaPemilik, String? namaPenerima, String? nomorHp, String? catatan,
+    String? resi, String? namaPemilik, String? nomorHp,
     String? fotoPaketPath, String? fotoRumahPath, String? fotoPenerimaPath,
     double? latitude, double? longitude, double? gpsAkurasi,
     bool? isSaving, bool? isLoadingGps, String? errorMessage, bool clearError = false,
@@ -44,9 +50,7 @@ class _FormState {
     return _FormState(
       resi: resi ?? this.resi,
       namaPemilik: namaPemilik ?? this.namaPemilik,
-      namaPenerima: namaPenerima ?? this.namaPenerima,
       nomorHp: nomorHp ?? this.nomorHp,
-      catatan: catatan ?? this.catatan,
       fotoPaketPath: fotoPaketPath ?? this.fotoPaketPath,
       fotoRumahPath: fotoRumahPath ?? this.fotoRumahPath,
       fotoPenerimaPath: fotoPenerimaPath ?? this.fotoPenerimaPath,
@@ -68,9 +72,7 @@ class _FormBuktiNotifier extends Notifier<_FormState> {
 
   void setResi(String v) => state = state.copyWith(resi: v);
   void setNamaPemilik(String v) => state = state.copyWith(namaPemilik: v);
-  void setNamaPenerima(String v) => state = state.copyWith(namaPenerima: v);
   void setNomorHp(String v) => state = state.copyWith(nomorHp: v);
-  void setCatatan(String v) => state = state.copyWith(catatan: v);
   void setFotoPaket(String p) => state = state.copyWith(fotoPaketPath: p);
   void setFotoRumah(String p) => state = state.copyWith(fotoRumahPath: p);
   void setFotoPenerima(String p) => state = state.copyWith(fotoPenerimaPath: p);
@@ -96,12 +98,13 @@ class _FormBuktiNotifier extends Notifier<_FormState> {
     try {
       final now = DateTime.now();
       final repo = ref.read(deliveryRepositoryProvider);
+      // Resi opsional: bila kosong, buat penanda unik dari waktu (resi harus unik di database).
+      final resi = state.resi.trim().isEmpty ? _resiOtomatis(now) : state.resi.trim();
       final evidence = DeliveryEvidence()
-        ..resi = state.resi.trim()
+        ..uuid = generateUuid()
+        ..resi = resi
         ..namaPemilik = state.namaPemilik.trim().isEmpty ? null : state.namaPemilik.trim()
-        ..namaPenerima = state.namaPenerima.trim().isEmpty ? null : state.namaPenerima.trim()
         ..nomorHp = state.nomorHp.trim().isEmpty ? null : state.nomorHp.trim()
-        ..catatan = state.catatan.trim().isEmpty ? null : state.catatan.trim()
         ..latitude = state.latitude
         ..longitude = state.longitude
         ..gpsAkurasi = state.gpsAkurasi
@@ -117,8 +120,10 @@ class _FormBuktiNotifier extends Notifier<_FormState> {
       ]) {
         if (path == null) continue;
         final photo = DeliveryPhoto()
+          ..uuid = generateUuid()
+          ..evidenceUuid = evidence.uuid
           ..evidenceId = evidenceId
-          ..evidenceResi = state.resi.trim()
+          ..evidenceResi = resi
           ..localPath = path
           ..photoTypeValue = type.value
           ..createdAt = now;
@@ -154,9 +159,7 @@ class FormBuktiPage extends ConsumerStatefulWidget {
 class _FormBuktiPageState extends ConsumerState<FormBuktiPage> {
   final _resiCtrl = TextEditingController();
   final _namaPemilikCtrl = TextEditingController();
-  final _namaPenerimaCtrl = TextEditingController();
   final _nomorHpCtrl = TextEditingController();
-  final _catatanCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -176,8 +179,7 @@ class _FormBuktiPageState extends ConsumerState<FormBuktiPage> {
 
   @override
   void dispose() {
-    _resiCtrl.dispose(); _namaPemilikCtrl.dispose(); _namaPenerimaCtrl.dispose();
-    _nomorHpCtrl.dispose(); _catatanCtrl.dispose();
+    _resiCtrl.dispose(); _namaPemilikCtrl.dispose(); _nomorHpCtrl.dispose();
     super.dispose();
   }
 
@@ -192,7 +194,7 @@ class _FormBuktiPageState extends ConsumerState<FormBuktiPage> {
       // Trigger sync di background (fire and forget)
       _triggerSyncInBackground(evidenceId);
 
-      context.goNamed(AppRoutes.scannerName);
+      context.goNamed(AppRoutes.homeName);
     }
   }
 
@@ -218,7 +220,7 @@ class _FormBuktiPageState extends ConsumerState<FormBuktiPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Form Bukti'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.goNamed(AppRoutes.scannerName)),
+        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.goNamed(AppRoutes.homeName)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -238,9 +240,9 @@ class _FormBuktiPageState extends ConsumerState<FormBuktiPage> {
                 ]),
               ),
 
-            _Label('Nomor Resi', required: true),
+            _Label('Nomor Resi'),
             TextField(controller: _resiCtrl, textCapitalization: TextCapitalization.characters,
-                onChanged: n.setResi, decoration: const InputDecoration(hintText: 'Scan atau input manual', prefixIcon: Icon(Icons.qr_code))),
+                onChanged: n.setResi, decoration: const InputDecoration(hintText: 'Opsional (kosong = dibuat otomatis)', prefixIcon: Icon(Icons.qr_code))),
             const SizedBox(height: 20),
 
             _InfoRow(icon: Icons.access_time_outlined, label: 'Waktu', value: DateFormatter.tanggalJam(DateTime.now())),
@@ -252,16 +254,8 @@ class _FormBuktiPageState extends ConsumerState<FormBuktiPage> {
             TextField(controller: _namaPemilikCtrl, onChanged: n.setNamaPemilik, decoration: const InputDecoration(hintText: 'Opsional')),
             const SizedBox(height: 12),
 
-            _Label('Nama Penerima'),
-            TextField(controller: _namaPenerimaCtrl, onChanged: n.setNamaPenerima, decoration: const InputDecoration(hintText: 'Opsional')),
-            const SizedBox(height: 12),
-
             _Label('Nomor HP'),
             TextField(controller: _nomorHpCtrl, keyboardType: TextInputType.phone, onChanged: n.setNomorHp, decoration: const InputDecoration(hintText: 'Opsional')),
-            const SizedBox(height: 12),
-
-            _Label('Catatan'),
-            TextField(controller: _catatanCtrl, maxLines: 3, onChanged: n.setCatatan, decoration: const InputDecoration(hintText: 'Opsional', alignLabelWithHint: true)),
             const SizedBox(height: 24),
 
             Text('Foto', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
@@ -290,7 +284,7 @@ class _FormBuktiPageState extends ConsumerState<FormBuktiPage> {
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
-                  formState.resi.isEmpty ? 'Nomor resi wajib diisi' : 'Foto paket wajib diambil',
+                  'Foto paket wajib diambil',
                   style: TextStyle(color: theme.colorScheme.error, fontSize: 12),
                   textAlign: TextAlign.center,
                 ),

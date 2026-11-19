@@ -55,7 +55,8 @@ const DeliveryEvidenceSchema = CollectionSchema(
       name: r'syncStatusValue',
       type: IsarType.long,
     ),
-    r'waktu': PropertySchema(id: 10, name: r'waktu', type: IsarType.dateTime),
+    r'uuid': PropertySchema(id: 10, name: r'uuid', type: IsarType.string),
+    r'waktu': PropertySchema(id: 11, name: r'waktu', type: IsarType.dateTime),
   },
 
   estimateSize: _deliveryEvidenceEstimateSize,
@@ -137,6 +138,7 @@ int _deliveryEvidenceEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  bytesCount += 3 + object.uuid.length * 3;
   return bytesCount;
 }
 
@@ -156,7 +158,8 @@ void _deliveryEvidenceSerialize(
   writer.writeString(offsets[7], object.resi);
   writer.writeString(offsets[8], object.supabaseId);
   writer.writeLong(offsets[9], object.syncStatusValue);
-  writer.writeDateTime(offsets[10], object.waktu);
+  writer.writeString(offsets[10], object.uuid);
+  writer.writeDateTime(offsets[11], object.waktu);
 }
 
 DeliveryEvidence _deliveryEvidenceDeserialize(
@@ -177,7 +180,8 @@ DeliveryEvidence _deliveryEvidenceDeserialize(
   object.resi = reader.readString(offsets[7]);
   object.supabaseId = reader.readStringOrNull(offsets[8]);
   object.syncStatusValue = reader.readLong(offsets[9]);
-  object.waktu = reader.readDateTime(offsets[10]);
+  object.uuid = reader.readString(offsets[10]);
+  object.waktu = reader.readDateTime(offsets[11]);
   return object;
 }
 
@@ -209,6 +213,8 @@ P _deliveryEvidenceDeserializeProp<P>(
     case 9:
       return (reader.readLong(offset)) as P;
     case 10:
+      return (reader.readString(offset)) as P;
+    case 11:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1855,6 +1861,147 @@ extension DeliveryEvidenceQueryFilter
   }
 
   QueryBuilder<DeliveryEvidence, DeliveryEvidence, QAfterFilterCondition>
+  uuidEqualTo(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'uuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryEvidence, DeliveryEvidence, QAfterFilterCondition>
+  uuidGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'uuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryEvidence, DeliveryEvidence, QAfterFilterCondition>
+  uuidLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'uuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryEvidence, DeliveryEvidence, QAfterFilterCondition>
+  uuidBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'uuid',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryEvidence, DeliveryEvidence, QAfterFilterCondition>
+  uuidStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'uuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryEvidence, DeliveryEvidence, QAfterFilterCondition>
+  uuidEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'uuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryEvidence, DeliveryEvidence, QAfterFilterCondition>
+  uuidContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'uuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryEvidence, DeliveryEvidence, QAfterFilterCondition>
+  uuidMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'uuid',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryEvidence, DeliveryEvidence, QAfterFilterCondition>
+  uuidIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'uuid', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryEvidence, DeliveryEvidence, QAfterFilterCondition>
+  uuidIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'uuid', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryEvidence, DeliveryEvidence, QAfterFilterCondition>
   waktuEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -2057,6 +2204,19 @@ extension DeliveryEvidenceQuerySortBy
     });
   }
 
+  QueryBuilder<DeliveryEvidence, DeliveryEvidence, QAfterSortBy> sortByUuid() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'uuid', Sort.asc);
+    });
+  }
+
+  QueryBuilder<DeliveryEvidence, DeliveryEvidence, QAfterSortBy>
+  sortByUuidDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'uuid', Sort.desc);
+    });
+  }
+
   QueryBuilder<DeliveryEvidence, DeliveryEvidence, QAfterSortBy> sortByWaktu() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'waktu', Sort.asc);
@@ -2225,6 +2385,19 @@ extension DeliveryEvidenceQuerySortThenBy
     });
   }
 
+  QueryBuilder<DeliveryEvidence, DeliveryEvidence, QAfterSortBy> thenByUuid() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'uuid', Sort.asc);
+    });
+  }
+
+  QueryBuilder<DeliveryEvidence, DeliveryEvidence, QAfterSortBy>
+  thenByUuidDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'uuid', Sort.desc);
+    });
+  }
+
   QueryBuilder<DeliveryEvidence, DeliveryEvidence, QAfterSortBy> thenByWaktu() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'waktu', Sort.asc);
@@ -2312,6 +2485,14 @@ extension DeliveryEvidenceQueryWhereDistinct
     });
   }
 
+  QueryBuilder<DeliveryEvidence, DeliveryEvidence, QDistinct> distinctByUuid({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'uuid', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<DeliveryEvidence, DeliveryEvidence, QDistinct>
   distinctByWaktu() {
     return QueryBuilder.apply(this, (query) {
@@ -2391,6 +2572,12 @@ extension DeliveryEvidenceQueryProperty
   syncStatusValueProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'syncStatusValue');
+    });
+  }
+
+  QueryBuilder<DeliveryEvidence, String, QQueryOperations> uuidProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'uuid');
     });
   }
 
